@@ -1,0 +1,5 @@
+mode,name_en,name_de,kg_co2e_per_tonne_km
+truck,Truck,LKW,0.10
+rail,Rail,Bahn,0.03
+sea,Sea freight,Seefracht,0.01
+air,Air freight,Luftfracht,0.60

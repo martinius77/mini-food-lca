@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block content %}
+
+{% if show_toggle_banner %}
+<div class="banner">
+  <span>{{ banner }}</span>
+  <a href="{{ url_for('set_language', lang=other_lang) }}">{{ t.switch_to.format(language=other_lang_name) }}</a>
+</div>
+{% endif %}
+
+<section class="hero">
+  <h1>{{ t.tagline }}</h1>
+  <p class="intro">{{ t.intro }}</p>
+</section>
+
+<form class="compare-form" method="post" action="{{ url_for('compare_route') }}">
+  <div class="form-grid">
+
+    {% for side, label, default_food in [('a', t.food_a_label, 'beef'), ('b', t.food_b_label, 'tofu')] %}
+    <fieldset class="food-col">
+      <legend>{{ label }}</legend>
+
+      <label for="food_{{ side }}">{{ label }}</label>
+      <select id="food_{{ side }}" name="food_{{ side }}">
+        {% for f in foods %}
+        <option value="{{ f.id }}" {% if f.id == default_food %}selected{% endif %}>{{ f.name }}</option>
+        {% endfor %}
+      </select>
+
+      <div class="qty-row">
+        <div class="qty-field">
+          <label for="qty_{{ side }}">{{ t.quantity_label }}</label>
+          <input id="qty_{{ side }}" name="qty_{{ side }}" type="number" min="0" step="any" value="1">
+        </div>
+        <div class="unit-field">
+          <label for="unit_{{ side }}">{{ t.unit_label }}</label>
+          <select id="unit_{{ side }}" name="unit_{{ side }}">
+            {% for value, text in units %}
+            <option value="{{ value }}">{{ text }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+
+      <label for="origin_{{ side }}">{{ t.origin_label }}</label>
+      <select id="origin_{{ side }}" name="origin_{{ side }}">
+        {% for o in origins %}
+        <option value="{{ o.id }}">{{ o.name }}</option>
+        {% endfor %}
+      </select>
+    </fieldset>
+    {% endfor %}
+
+  </div>
+
+  <button class="compare-btn" type="submit">{{ t.compare_button }}</button>
+</form>
+
+{% endblock %}

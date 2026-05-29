@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="{{ lang }}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ t.app_title }}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <header class="topbar">
+    <a class="wordmark" href="{{ url_for('index') }}">{{ t.app_title }}</a>
+    <a class="lang-toggle" href="{{ url_for('set_language', lang=other_lang) }}">
+      {{ t.switch_to.format(language=other_lang_name) }}
+    </a>
+  </header>
+
+  <main class="container">
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="footer">
+    <p class="uncertainty">{{ t.uncertainty_note }}</p>
+    <p class="sources">{{ t.footer_sources }}</p>
+  </footer>
+</body>
+</html>

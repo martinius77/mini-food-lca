@@ -1,0 +1,30 @@
+id,name_en,name_de,regions,lat,lon
+at,Austria,Österreich,eu,47.5,14.5
+de,Germany,Deutschland,eu,51.2,10.4
+ch,Switzerland,Schweiz,eu,46.8,8.2
+es,Spain,Spanien,eu,40.0,-3.7
+it,Italy,Italien,eu,41.9,12.6
+nl,Netherlands,Niederlande,eu,52.1,5.3
+fr,France,Frankreich,eu,46.6,2.2
+pl,Poland,Polen,eu,52.1,19.4
+gr,Greece,Griechenland,eu,39.0,22.0
+ma,Morocco,Marokko,eu,31.8,-7.1
+tr,Turkey,Türkei,eu,39.0,35.2
+eg,Egypt,Ägypten,eu,26.8,30.8
+il,Israel,Israel,eu,31.0,34.9
+za,South Africa,Südafrika,eu,-30.6,22.9
+ec,Ecuador,Ecuador,eu;americas,-1.8,-78.2
+cr,Costa Rica,Costa Rica,eu;americas,9.7,-83.8
+br,Brazil,Brasilien,eu;americas,-14.2,-51.9
+co,Colombia,Kolumbien,eu;americas,4.6,-74.3
+us,United States,USA,americas,39.8,-98.6
+mx,Mexico,Mexiko,americas,23.6,-102.6
+ca,Canada,Kanada,americas,56.1,-106.3
+pe,Peru,Peru,americas,-9.2,-75.0
+cl,Chile,Chile,americas,-35.7,-71.5
+ar,Argentina,Argentinien,americas,-38.4,-63.6
+gt,Guatemala,Guatemala,americas,15.8,-90.2
+hn,Honduras,Honduras,americas,15.2,-86.2
+us_ca,California,Kalifornien,americas,36.8,-119.4
+us_fl,Florida,Florida,americas,27.7,-81.5
+us_wa,Washington,Washington,americas,47.4,-120.7
