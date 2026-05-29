@@ -1,56 +1,36 @@
 {% extends "base.html" %}
 {% block content %}
 
-{% if show_toggle_banner %}
-<div class="banner">
-  <span>{{ banner }}</span>
-  <a href="{{ url_for('set_language', lang=other_lang) }}">{{ t.switch_to.format(language=other_lang_name) }}</a>
-</div>
-{% endif %}
-
 <section class="hero">
   <h1>{{ t.tagline }}</h1>
-  <p class="intro">{{ t.intro }}</p>
 </section>
 
-<!-- Results render here (above the controls) and update live via app.js. -->
-<div class="results-wrap">
-  <div id="results" class="live-results" aria-live="polite" aria-busy="false"></div>
-  <div class="loader" aria-hidden="true">
-    <svg class="bunny" viewBox="0 0 11 12" width="44" height="48" shape-rendering="crispEdges" role="img" aria-label="Loading">
-      <!-- 8-bit bunny drawn as 1x1 "pixel" rects -->
-      <g fill="currentColor">
-        <rect x="2" y="0" width="1" height="1"/><rect x="4" y="0" width="1" height="1"/>
-        <rect x="2" y="1" width="1" height="1"/><rect x="4" y="1" width="1" height="1"/>
-        <rect x="2" y="2" width="1" height="1"/><rect x="4" y="2" width="1" height="1"/>
-        <rect x="2" y="3" width="3" height="1"/>
-        <rect x="1" y="4" width="5" height="1"/>
-        <rect x="1" y="5" width="5" height="1"/>
-        <rect x="3" y="5" width="1" height="1" fill="#ff6b9d"/>
-        <rect x="1" y="6" width="5" height="1"/>
-        <rect x="1" y="7" width="5" height="1"/>
-        <rect x="1" y="8" width="6" height="1"/>
-        <rect x="2" y="9" width="6" height="1"/>
-        <rect x="1" y="10" width="2" height="1"/><rect x="5" y="10" width="3" height="1"/>
-      </g>
-    </svg>
-  </div>
-</div>
-
 <form id="compare-form" class="compare-form">
-  <div class="form-grid">
+  <!-- Live verdict banner above both columns. -->
+  <div id="verdict" class="verdict" aria-live="polite"></div>
 
+  <div class="columns" aria-busy="false">
     {% for side, label, default_food in [('a', t.food_a_label, 'beef'), ('b', t.food_b_label, 'tofu')] %}
-    <fieldset class="food-col">
-      <legend>{{ label }}</legend>
+    <section class="food-block">
 
-      <label for="food_{{ side }}">{{ label }}</label>
-      <select id="food_{{ side }}" name="food_{{ side }}">
-        {% for f in foods %}
-        <option value="{{ f.id }}" {% if f.id == default_food %}selected{% endif %}>{{ f.name }}</option>
-        {% endfor %}
-      </select>
+      <!-- (a) carbon hero -->
+      <div class="carbon-hero">
+        <span id="carbon-{{ side }}" class="big-number live-val"></span>
+        <span class="big-unit">{{ t.carbon_unit }}</span>
+        <span id="carbon-range-{{ side }}" class="range live-val"></span>
+      </div>
 
+      <!-- (b) food picker -->
+      <div class="field">
+        <label for="food_{{ side }}">{{ label }}</label>
+        <select id="food_{{ side }}" name="food_{{ side }}">
+          {% for f in foods %}
+          <option value="{{ f.id }}" {% if f.id == default_food %}selected{% endif %}>{{ f.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- (c) quantity + unit -->
       <div class="qty-row">
         <div class="qty-field">
           <label for="qty_{{ side }}">{{ t.quantity_label }}</label>
@@ -66,18 +46,52 @@
         </div>
       </div>
 
-      <label for="origin_{{ side }}">{{ t.origin_label }}</label>
-      <select id="origin_{{ side }}" name="origin_{{ side }}">
-        {% for o in origins %}
-        <option value="{{ o.id }}">{{ o.name }}</option>
-        {% endfor %}
-      </select>
-    </fieldset>
+      <!-- (d) origin -->
+      <div class="field">
+        <label for="origin_{{ side }}">{{ t.origin_label }}</label>
+        <select id="origin_{{ side }}" name="origin_{{ side }}">
+          {% for o in origins %}
+          <option value="{{ o.id }}">{{ o.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- (e,f,g) below the fold -->
+      <div class="below-fold">
+        <div class="metric">
+          <span class="metric-label">{{ t.water_label }}</span>
+          <span id="water-{{ side }}" class="metric-value live-val"></span>
+        </div>
+        <div class="metric">
+          <span class="metric-label">{{ t.land_label }}</span>
+          <span id="land-{{ side }}" class="metric-value live-val"></span>
+        </div>
+        <p id="benchmark-{{ side }}" class="benchmark live-val"></p>
+      </div>
+
+    </section>
     {% endfor %}
 
+    <!-- Hopping pixel-bunny loader, overlaid while a request is in flight. -->
+    <div class="loader" aria-hidden="true">
+      <svg class="bunny" viewBox="0 0 11 12" width="44" height="48" shape-rendering="crispEdges" role="img" aria-label="Loading">
+        <g fill="currentColor">
+          <rect x="2" y="0" width="1" height="1"/><rect x="4" y="0" width="1" height="1"/>
+          <rect x="2" y="1" width="1" height="1"/><rect x="4" y="1" width="1" height="1"/>
+          <rect x="2" y="2" width="1" height="1"/><rect x="4" y="2" width="1" height="1"/>
+          <rect x="2" y="3" width="3" height="1"/>
+          <rect x="1" y="4" width="5" height="1"/>
+          <rect x="1" y="5" width="5" height="1"/>
+          <rect x="3" y="5" width="1" height="1" fill="#ff6b9d"/>
+          <rect x="1" y="6" width="5" height="1"/>
+          <rect x="1" y="7" width="5" height="1"/>
+          <rect x="1" y="8" width="6" height="1"/>
+          <rect x="2" y="9" width="6" height="1"/>
+          <rect x="1" y="10" width="2" height="1"/><rect x="5" y="10" width="3" height="1"/>
+        </g>
+      </svg>
+    </div>
   </div>
 </form>
-
-<script src="{{ url_for('static', filename='app.js') }}" defer></script>
 
 {% endblock %}

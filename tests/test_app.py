@@ -57,8 +57,9 @@ def test_health_endpoint(client):
     assert data["foods"] >= 40
 
 
-# Live fragment render (the "local cheese vs imported strawberries" surprise).
-def test_compare_live_renders_cards_fragment(client):
+# Live route returns JSON of formatted display strings (the cheese vs strawberry
+# surprise), with German decimal formatting preserved by the server.
+def test_compare_live_returns_json(client):
     r = client.get(
         "/compare/live",
         headers={"x-vercel-ip-country": "AT"},
@@ -67,18 +68,32 @@ def test_compare_live_renders_cards_fragment(client):
             "food_b": "strawberry", "qty_b": "200", "unit_b": "grams", "origin_b": "es",
         },
     )
-    html = r.get_data(as_text=True)
     assert r.status_code == 200
-    # It's a fragment, not a full page: no <html> wrapper, just the cards + delta.
-    assert "<html" not in html
-    assert 'class="cards"' in html and 'class="delta"' in html
-    assert "Käse" in html and "Erdbeere" in html
+    assert r.mimetype == "application/json"
+    data = r.get_json()
+    assert set(data.keys()) == {"a", "b", "verdict"}
+    assert data["a"]["name"] == "Käse" and data["b"]["name"] == "Erdbeere"
+    # Each food carries formatted strings, no raw numbers, no calculation client-side.
+    for key in ("carbon", "carbon-range", "water", "land", "benchmark"):
+        assert key in data["a"]
+    # German decimals use a comma (e.g. "4,8"), proving Python did the formatting.
+    assert "," in data["a"]["carbon"]
+    assert "Erdbeere" in data["verdict"] and "Käse" in data["verdict"]
 
 
 # Live route tolerates missing params, falling back to beef vs tofu defaults.
 def test_compare_live_defaults_to_beef_vs_tofu(client):
-    html = client.get("/compare/live", headers={"x-vercel-ip-country": "US"}).get_data(as_text=True)
-    assert "Beef" in html and "Tofu" in html
+    data = client.get("/compare/live", headers={"x-vercel-ip-country": "US"}).get_json()
+    assert data["a"]["name"] == "Beef" and data["b"]["name"] == "Tofu"
+
+
+# Index page exposes the empty target elements JS fills, and the verdict banner.
+def test_index_has_live_targets(client):
+    html = client.get("/", headers={"x-vercel-ip-country": "US"}).get_data(as_text=True)
+    for el_id in ("carbon-a", "carbon-range-a", "water-a", "land-a", "benchmark-a",
+                  "carbon-b", "water-b", "land-b", "benchmark-b"):
+        assert 'id="' + el_id + '"' in html
+    assert 'id="verdict"' in html
 
 
 # The old POST /compare route is gone.

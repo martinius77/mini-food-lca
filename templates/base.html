@@ -7,13 +7,6 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-  <header class="topbar">
-    <a class="wordmark" href="{{ url_for('index') }}">{{ t.app_title }}</a>
-    <a class="lang-toggle" href="{{ url_for('set_language', lang=other_lang) }}">
-      {{ t.switch_to.format(language=other_lang_name) }}
-    </a>
-  </header>
-
   <main class="container">
     {% block content %}{% endblock %}
   </main>
@@ -21,6 +14,14 @@
   <footer class="footer">
     <p class="uncertainty">{{ t.uncertainty_note }}</p>
     <p class="sources">{{ t.footer_sources }}</p>
+    <div class="lang-area">
+      <span class="detected">{{ banner }}</span>
+      <a class="lang-toggle" href="{{ url_for('set_language', lang=other_lang) }}">
+        {{ t.switch_to.format(language=other_lang_name) }}
+      </a>
+    </div>
   </footer>
+
+  <script src="{{ url_for('static', filename='app.js') }}" defer></script>
 </body>
 </html>

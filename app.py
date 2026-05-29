@@ -12,7 +12,7 @@ which persists for the session.
 
 import os
 
-from flask import Flask, redirect, render_template, request, session, url_for
+from flask import Flask, jsonify, redirect, render_template, request, session, url_for
 
 from src.data_loader import load_foods, load_origins, load_transport_factors, load_translations
 from src.lca import compare
@@ -226,13 +226,48 @@ def comparison_context(getter, country, lang):
     }
 
 
+def comparison_payload(getter, country, lang):
+    """Build a JSON-serializable payload of already-formatted display strings.
+
+    Inputs and outputs now share one block per food, so the browser can't swap a
+    results container's innerHTML (it would destroy the live input controls).
+    Instead the server returns formatted strings and JS sets them as textContent.
+    All number formatting (incl. German decimals) happens here via fmt_number,
+    never in JavaScript.
+    """
+    context = comparison_context(getter, country, lang)
+    t = context["t"]
+
+    def strings(card):
+        return {
+            "name": card["name"],
+            "carbon": fmt_number(card["carbon"]["value"], lang),
+            "carbon-range": "± {}–{}".format(
+                fmt_number(card["carbon"]["lower"], lang),
+                fmt_number(card["carbon"]["upper"], lang),
+            ),
+            "water": "{} {}".format(fmt_number(card["water"]["value"], lang), t["water_unit"]),
+            "land": "{} {}".format(fmt_number(card["land"]["value"], lang), t["land_unit"]),
+            "benchmark": (
+                "{} {}.".format(t["like_prefix"], card["benchmark_text"])
+                if card["benchmark_text"]
+                else ""
+            ),
+        }
+
+    return {
+        "a": strings(context["card_a"]),
+        "b": strings(context["card_b"]),
+        "verdict": "{}: {}".format(context["card_b"]["name"], context["delta"]),
+    }
+
+
 @app.route("/compare/live")
 def compare_live():
-    """Render ONLY the cards fragment from query-string selections (for fetch)."""
+    """Return formatted comparison values as JSON from query-string selections."""
     country = detect_country()
     lang = current_language(country)
-    context = comparison_context(request.args.get, country, lang)
-    return render_template("_cards.html", **context)
+    return jsonify(comparison_payload(request.args.get, country, lang))
 
 
 @app.route("/api/health")

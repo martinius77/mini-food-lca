@@ -5,9 +5,11 @@ food items side by side — with a "this is like driving X km" line to make the 
 graspable. Region-aware on origins, honest about uncertainty, and available in English
 and German without configuration.
 
-It's a single, mobile-first page that updates live: changing any control re-fetches
-server-rendered result cards and swaps them in. All calculation stays in Python — the
-browser never does footprint math — so the page requires JavaScript by design.
+It's a single, mobile-first page laid out as two side-by-side columns (one food
+each), where every food's inputs and outputs live in the same block. Changing any
+control fetches freshly-formatted values as JSON and sets them in place. All
+calculation and number formatting stay in Python — the browser never does footprint
+math — so the page requires JavaScript by design.
 
 Built as a 2-day learning project. See [PRD.md](PRD.md) for the full spec.
 
