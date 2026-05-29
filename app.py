@@ -14,7 +14,7 @@ import os
 
 from flask import Flask, jsonify, redirect, render_template, request, session, url_for
 
-from src.data_loader import load_foods, load_origins, load_transport_factors, load_translations
+from src.data_loader import load_foods, load_origins, load_translations
 from src.lca import compare
 from src.transport import AVERAGE_ORIGIN
 
@@ -96,23 +96,10 @@ def fmt_number(value, lang, decimals=None):
     return text
 
 
-def build_card(result, food_id, origin_id, lang):
-    """Turn a calculate_footprint result into a template-ready card."""
+def build_card(result, food_id, lang):
+    """Format a calculate_footprint result into the display fields the UI shows."""
     t = load_translations()[lang]
     food = load_foods()[food_id]
-    origins = load_origins()
-
-    origin_name = (
-        t["origin_average"] if origin_id == AVERAGE_ORIGIN else origins[origin_id]["name_" + lang]
-    )
-
-    # Transport line.
-    mode = result["transport_mode"]
-    if mode:
-        mode_name = load_transport_factors()[mode]["name_" + lang]
-        transport_line = t["transport_via"].format(mode=mode_name)
-    else:
-        transport_line = None
 
     # Benchmark line.
     benchmark = result["benchmark"]
@@ -124,13 +111,9 @@ def build_card(result, food_id, origin_id, lang):
 
     return {
         "name": food["name_" + lang],
-        "origin_name": origin_name,
         "carbon": result["carbon"],
         "water": result["water"],
         "land": result["land"],
-        "breakdown": result["carbon_breakdown"],
-        "transport_line": transport_line,
-        "air_flagged": result["air_flagged"],
         "benchmark_text": benchmark_text,
     }
 
@@ -144,12 +127,6 @@ def delta_text(delta_pct, other_name, lang):
 
 
 # --- routes ------------------------------------------------------------------
-
-@app.context_processor
-def inject_globals():
-    """Expose the number formatter to all templates."""
-    return {"fmt": fmt_number}
-
 
 @app.route("/lang/<lang>")
 def set_language(lang):
@@ -182,7 +159,6 @@ def index():
         banner=banner,
         other_lang=other_lang,
         other_lang_name=translations[other_lang]["lang_name"],
-        show_toggle_banner=session.get("lang") is None,
     )
 
 
@@ -191,11 +167,11 @@ DEFAULT_FOODS = {"a": "beef", "b": "tofu"}
 
 
 def comparison_context(getter, country, lang):
-    """Run the two-food comparison and return the template context for _cards.html.
+    """Run the two-food comparison and return the formatted cards + verdict delta.
 
     ``getter`` is a ``request.args.get``-style callable so the same logic serves
     any source of form values. All math, formatting and uncertainty stay in
-    Python; the caller only renders the result.
+    Python; the caller only serializes the result.
     """
     def selection(side):
         try:
@@ -214,8 +190,8 @@ def comparison_context(getter, country, lang):
     sel_b = selection("b")
     result = compare(sel_a, sel_b)
 
-    card_a = build_card(result["a"], sel_a["food_id"], sel_a["origin"], lang)
-    card_b = build_card(result["b"], sel_b["food_id"], sel_b["origin"], lang)
+    card_a = build_card(result["a"], sel_a["food_id"], lang)
+    card_b = build_card(result["b"], sel_b["food_id"], lang)
 
     return {
         "t": load_translations()[lang],
