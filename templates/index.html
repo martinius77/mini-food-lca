@@ -13,7 +13,31 @@
   <p class="intro">{{ t.intro }}</p>
 </section>
 
-<form class="compare-form" method="post" action="{{ url_for('compare_route') }}">
+<!-- Results render here (above the controls) and update live via app.js. -->
+<div class="results-wrap">
+  <div id="results" class="live-results" aria-live="polite" aria-busy="false"></div>
+  <div class="loader" aria-hidden="true">
+    <svg class="bunny" viewBox="0 0 11 12" width="44" height="48" shape-rendering="crispEdges" role="img" aria-label="Loading">
+      <!-- 8-bit bunny drawn as 1x1 "pixel" rects -->
+      <g fill="currentColor">
+        <rect x="2" y="0" width="1" height="1"/><rect x="4" y="0" width="1" height="1"/>
+        <rect x="2" y="1" width="1" height="1"/><rect x="4" y="1" width="1" height="1"/>
+        <rect x="2" y="2" width="1" height="1"/><rect x="4" y="2" width="1" height="1"/>
+        <rect x="2" y="3" width="3" height="1"/>
+        <rect x="1" y="4" width="5" height="1"/>
+        <rect x="1" y="5" width="5" height="1"/>
+        <rect x="3" y="5" width="1" height="1" fill="#ff6b9d"/>
+        <rect x="1" y="6" width="5" height="1"/>
+        <rect x="1" y="7" width="5" height="1"/>
+        <rect x="1" y="8" width="6" height="1"/>
+        <rect x="2" y="9" width="6" height="1"/>
+        <rect x="1" y="10" width="2" height="1"/><rect x="5" y="10" width="3" height="1"/>
+      </g>
+    </svg>
+  </div>
+</div>
+
+<form id="compare-form" class="compare-form">
   <div class="form-grid">
 
     {% for side, label, default_food in [('a', t.food_a_label, 'beef'), ('b', t.food_b_label, 'tofu')] %}
@@ -30,7 +54,7 @@
       <div class="qty-row">
         <div class="qty-field">
           <label for="qty_{{ side }}">{{ t.quantity_label }}</label>
-          <input id="qty_{{ side }}" name="qty_{{ side }}" type="number" min="0" step="any" value="1">
+          <input id="qty_{{ side }}" name="qty_{{ side }}" type="number" inputmode="decimal" min="0" step="any" value="1">
         </div>
         <div class="unit-field">
           <label for="unit_{{ side }}">{{ t.unit_label }}</label>
@@ -52,8 +76,8 @@
     {% endfor %}
 
   </div>
-
-  <button class="compare-btn" type="submit">{{ t.compare_button }}</button>
 </form>
+
+<script src="{{ url_for('static', filename='app.js') }}" defer></script>
 
 {% endblock %}

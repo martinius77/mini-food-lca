@@ -5,6 +5,10 @@ food items side by side — with a "this is like driving X km" line to make the 
 graspable. Region-aware on origins, honest about uncertainty, and available in English
 and German without configuration.
 
+It's a single, mobile-first page that updates live: changing any control re-fetches
+server-rendered result cards and swaps them in. All calculation stays in Python — the
+browser never does footprint math — so the page requires JavaScript by design.
+
 Built as a 2-day learning project. See [PRD.md](PRD.md) for the full spec.
 
 ## Run locally
@@ -45,13 +49,13 @@ The tests map directly to the PRD acceptance criteria (F1–F7).
 ## Project layout
 
 ```
-app.py                  Flask routes: / , /compare , /api/health
+app.py                  Flask routes: / , /compare/live , /api/health
 src/lca.py              calculate_footprint() + compare()
 src/transport.py        haversine distance, mode selection, transport emissions
 src/comparisons.py      "that's like ..." benchmark picker
 src/data_loader.py      cached CSV/JSON loading
 data/                   food factors, origins, transport factors, EN/DE strings
-templates/ , static/    server-rendered HTML + Apple-style CSS
+templates/ , static/    server-rendered HTML + Apple-style CSS + live-update JS
 vercel.json             Python serverless config
 ```
 

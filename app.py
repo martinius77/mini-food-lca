@@ -186,42 +186,53 @@ def index():
     )
 
 
-@app.route("/compare", methods=["POST"])
-def compare_route():
-    country = detect_country()
-    lang = current_language(country)
-    t = load_translations()[lang]
-    translations = load_translations()
+# Defaults so a selection is always valid even with missing/empty params.
+DEFAULT_FOODS = {"a": "beef", "b": "tofu"}
 
+
+def comparison_context(getter, country, lang):
+    """Run the two-food comparison and return the template context for _cards.html.
+
+    ``getter`` is a ``request.args.get``-style callable so the same logic serves
+    any source of form values. All math, formatting and uncertainty stay in
+    Python; the caller only renders the result.
+    """
     def selection(side):
+        try:
+            quantity = float(getter("qty_" + side, "1") or 1)
+        except ValueError:
+            quantity = 1.0
         return {
-            "food_id": request.form["food_" + side],
-            "quantity": float(request.form.get("qty_" + side, 1) or 1),
-            "origin": request.form.get("origin_" + side, AVERAGE_ORIGIN),
+            "food_id": getter("food_" + side) or DEFAULT_FOODS[side],
+            "quantity": quantity,
+            "origin": getter("origin_" + side) or AVERAGE_ORIGIN,
             "user_country": country,
-            "unit": request.form.get("unit_" + side, "item"),
+            "unit": getter("unit_" + side) or "item",
         }
 
     sel_a = selection("a")
     sel_b = selection("b")
-
     result = compare(sel_a, sel_b)
 
     card_a = build_card(result["a"], sel_a["food_id"], sel_a["origin"], lang)
     card_b = build_card(result["b"], sel_b["food_id"], sel_b["origin"], lang)
 
-    other_lang = "de" if lang == "en" else "en"
+    return {
+        "t": load_translations()[lang],
+        "lang": lang,
+        "card_a": card_a,
+        "card_b": card_b,
+        "delta": delta_text(result["delta_pct"], card_a["name"], lang),
+    }
 
-    return render_template(
-        "result.html",
-        t=t,
-        lang=lang,
-        card_a=card_a,
-        card_b=card_b,
-        delta=delta_text(result["delta_pct"], card_a["name"], lang),
-        other_lang=other_lang,
-        other_lang_name=translations[other_lang]["lang_name"],
-    )
+
+@app.route("/compare/live")
+def compare_live():
+    """Render ONLY the cards fragment from query-string selections (for fetch)."""
+    country = detect_country()
+    lang = current_language(country)
+    context = comparison_context(request.args.get, country, lang)
+    return render_template("_cards.html", **context)
 
 
 @app.route("/api/health")
